@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Consulta de notas por DNI</title>
+</head>
+<body>
+    <h2>Consulta de notas</h2>
+    <p>Ingresá tu DNI para ver tu nota:</p>
+
+    <input id="dniInput" placeholder="DNI">
+    <button onclick="buscar()">Buscar</button>
+
+    <div id="resultado"></div>
+
+    <script>
+        // ⚠️ CAMBIAR SOLO ESTA LÍNEA: pegar tu link CSV acá
+        const URL_SHEET = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTINZ0za3xqZ4YL_nNCkSRf79mbztRFJGbhtTF8B2pbuGjF2PBO61FNL5XomXEG8MAOeAw6MvJeMU0x/pub?output=csv";
+
+        async function buscar() {
+            const dni = document.getElementById("dniInput").value.trim();
+            if (!dni) {
+                alert("Ingresá un DNI");
+                return;
+            }
+
+            const res = await fetch(URL_SHEET);
+            const data = await res.text();
+
+            // Parsear CSV
+            const filas = data.split("\n").map(f => f.split(","));
+
+            const headers = filas[0];
+            const dniIndex = headers.indexOf("DNI");
+
+            for (let i = 1; i < filas.length; i++) {
+                if (filas[i][dniIndex] && filas[i][dniIndex].trim() === dni) {
+
+                    let html = "<h3>Resultado:</h3>";
+                    headers.forEach((h, idx) => {
+                        html += `<p><b>${h}:</b> ${filas[i][idx]}</p>`;
+                    });
+
+                    document.getElementById("resultado").innerHTML = html;
+                    return;
+                }
+            }
+
+            document.getElementById("resultado").innerHTML =
+                "<p style='color:red'>DNI no encontrado</p>";
+        }
+    </script>
+</body>
+</html>
